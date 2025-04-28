@@ -154,6 +154,12 @@
             },
             "map.zoom-to-initial-viewpoint"
           ]
+        },
+        {
+          "title": "Add a plant feature",
+          "isEnabled": true,
+          "iconId": "feature-add-tree",
+          "action": "custom.quick-capture"
         }
       ]
     },
