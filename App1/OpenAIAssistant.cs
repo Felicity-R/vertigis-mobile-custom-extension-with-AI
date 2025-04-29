@@ -8,7 +8,7 @@ namespace App1
     {
         private const string deploymentName = "2025-hackathon-ai-gpt-4o-mini";
         private const string endpoint = "https://2025-hackathon-ai.openai.azure.com";
-        private const string key = "ENTER THE KEY";
+        private const string key = "";
 
         private AzureOpenAIClient _openAIClient;
 
@@ -47,7 +47,8 @@ namespace App1
                 chatMessages.Add(userChatMessage);
             }
 
-            ChatCompletion chatCompletion = await chatClient.CompleteChatAsync(chatMessages);
+            var chatCompletionOptions = new ChatCompletionOptions() { ResponseFormat = ChatResponseFormat.CreateJsonObjectFormat()};
+            ChatCompletion chatCompletion = await chatClient.CompleteChatAsync(chatMessages, chatCompletionOptions);
             return chatCompletion;
         }
     }

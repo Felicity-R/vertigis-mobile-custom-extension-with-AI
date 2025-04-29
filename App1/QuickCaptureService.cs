@@ -1,6 +1,7 @@
 ﻿using App1;
 using Esri.ArcGISRuntime.Geometry;
 using Microsoft.Maui.Graphics.Platform;
+using System.Text.Json;
 using VertiGIS.ArcGISExtensions.Utilities;
 using VertiGIS.Mobile.Composition;
 using VertiGIS.Mobile.Composition.Messaging;
@@ -53,49 +54,41 @@ namespace App1
                     position = position.RemoveM() as MapPoint;
                 }
 
-                EnhancedFileData photoData;
+                EnhancedFileData fileData;
+                FileResult? photo;
 
                 // Take a photo or pick a file
                 var choice = await _dialog.ShowConfirmationDialogAsync("Take a photo, or choose an existing photo from your library", "Select", "Use camera", "Choose from library");
                 if (choice)
                 {
-                    photoData = await _ops.PhotoOperations.TakePhoto.ExecuteAsync();
+                    photo = await TakePhotoAsync();
+                    fileData = new EnhancedFileData(photo);
                 }
                 else
                 {
                     var ops = PickOptions.Images;
-                    var file = await FilePicker.Default.PickAsync(ops);
-                    photoData = new EnhancedFileData(file);
+                    photo = await FilePicker.Default.PickAsync(ops);
+                    fileData = new EnhancedFileData(photo);
                 }
 
-                /*
-                 *  Example of how to use OpenAIClient to query a picture. TODO: Parse response text into feature
-                 * 
-                    var photo = await TakePhotoAsync();
-                    var imageData = await GetPhotoAsBytesAsync(photo);
-                    var queries = new List<string>
+                var imageData = await GetPhotoAsBytesAsync(photo);
+                var queries = new List<string>
+                {
+                    """
+                    What can you tell me about this tree in British Columbia? Fill out the following dictionary with answers. Respond with only JSON.  
                     {
-                        """
-                        What can you tell me about this tree in British Columbia? Fill out the following dictionary with answers. Respond with only JSON.  
-                        {
-                            Common Name:
-                            Scientific Name:
-                            Family:
-                            Conservation Status:
-                            Condition:
-                        }
-                        """,
-                    };
+                        Common Name:
+                        Scientific Name:
+                        Family:
+                        Conservation Status:
+                        Condition:
+                    }
+                    """,
+                };
 
-                    var response = await _openAIAssistant.QueryImageAsync(imageData, queries);
-                    var responseText = response.Content[0].Text;
-                 
-                 */
-
-                // Use AI results to populate some feature attribute(s)
-                var attributes = new Dictionary<string, object?>();
-                // TODO
-                attributes["Name"] = "TODO Name this tree";
+                var response = await _openAIAssistant.QueryImageAsync(imageData, queries);
+                var responseText =  response.Content[0].Text;
+                var attributes = JsonSerializer.Deserialize<Dictionary<string, object?>>(response.Content[0].Text);
 
                 // Create the new feature
                 var newFeature = table.CreateFeature(attributes, position);
@@ -114,7 +107,7 @@ namespace App1
                 var vertiGISFeature = newFeature.ToVertiGISFeature(layerExt);
 
                 // Add the photo as an attachment on the feature
-                var attachmentArgs = new AddAttachmentArgs(photoData, [vertiGISFeature], map);
+                var attachmentArgs = new AddAttachmentArgs(fileData, [vertiGISFeature], map);
                 await _ops.EditOperations.AddAttachment.ExecuteAsync(attachmentArgs);
 
                 // Launch the feature editing form so user can tweak values if necessary
@@ -145,15 +138,20 @@ namespace App1
         {
             if (photo == null)
             {
-                return new byte[0];
+                return Array.Empty<byte>();
             }
 
             using var stream = await photo.OpenReadAsync();
             var image = PlatformImage.FromStream(stream);
 
             // Default photos are around 4 MB, downsize by 1/4 on Android.
-            var newImage = image.Downsize(1008f, false);
-            return newImage.AsBytes(ImageFormat.Png, 1f);
+            if (image.Height > 1008 || image.Width > 1008)
+            {
+                var newImage = image.Downsize(1008f, false);
+                return newImage.AsBytes();
+            }
+
+            return image.AsBytes();
         }
     }
 }
