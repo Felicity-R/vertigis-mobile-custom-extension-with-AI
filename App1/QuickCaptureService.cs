@@ -1,5 +1,6 @@
 ﻿using App1;
 using Esri.ArcGISRuntime.Geometry;
+using Microsoft.Maui.Graphics.Platform;
 using VertiGIS.ArcGISExtensions.Utilities;
 using VertiGIS.Mobile.Composition;
 using VertiGIS.Mobile.Composition.Messaging;
@@ -19,12 +20,14 @@ namespace App1
         private AllOperations _ops;
         private IDialogController _dialog;
         private MapRepository _mapRepo;
+        private OpenAIAssistant _openAIAssistant;
 
         public QuickCaptureService(CommonAppDependencies deps)
         {
             _ops = deps.Operations;
             _dialog = deps.DialogController;
             _mapRepo = deps.MapRepo;
+            _openAIAssistant = new OpenAIAssistant();
 
             // Register our custom command. This is called by name later from the "I Want To..." menu.
             deps.OperationRegistry.VoidOperation("custom.quick-capture").RegisterExecute(DoQuickCaptureAsync, this);
@@ -64,8 +67,29 @@ namespace App1
                     photoData = await _ops.FileOperations.PickFile.ExecuteAsync(args);
                 }
 
-                // Process photo using AI service
-                // TODO
+                /*
+                 *  Example of how to use OpenAIClient to query a picture. TODO: Parse response text into feature
+                 * 
+                    var photo = await TakePhotoAsync();
+                    var imageData = await GetPhotoAsBytesAsync(photo);
+                    var queries = new List<string>
+                    {
+                        """
+                        What can you tell me about this tree in British Columbia? Fill out the following dictionary with answers. Respond with only JSON.  
+                        {
+                            Common Name:
+                            Scientific Name:
+                            Family:
+                            Conservation Status:
+                            Condition:
+                        }
+                        """,
+                    };
+
+                    var response = await _openAIAssistant.QueryImageAsync(imageData, queries);
+                    var responseText = response.Content[0].Text;
+                 
+                 */
 
                 // Use AI results to populate some feature attribute(s)
                 var attributes = new Dictionary<string, object?>();
@@ -100,6 +124,35 @@ namespace App1
                 await _dialog.ShowAlertAsync($"{e.Message}", "Error");
                 // TODO: remove feature if a failure happens part way through, after adding it to the table
             }
+        }
+
+        private static async Task<FileResult?> TakePhotoAsync()
+        {
+            if (MediaPicker.Default.IsCaptureSupported)
+            {
+                var photo = await MediaPicker.Default.CapturePhotoAsync();
+                if (photo != null)
+                {
+                    return photo;
+                }
+            }
+
+            return null;
+        }
+
+        private static async Task<byte[]> GetPhotoAsBytesAsync(FileResult photo)
+        {
+            if (photo == null)
+            {
+                return new byte[0];
+            }
+
+            using var stream = await photo.OpenReadAsync();
+            var image = PlatformImage.FromStream(stream);
+
+            // Default photos are around 4 MB, downsize by 1/4 on Android.
+            var newImage = image.Downsize(1008f, false);
+            return newImage.AsBytes(ImageFormat.Png, 1f);
         }
     }
 }
