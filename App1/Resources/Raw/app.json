@@ -57,13 +57,6 @@
       "url": "https://geocode.arcgis.com/arcgis/rest/services/World/GeocodeServer"
     },
     {
-      "$type": "workflow",
-      "id": "workflow",
-      "title": "Hydrant Inspection",
-      "target": "#taskbar",
-      "portalItem": "1dfbdba7cd9b4453a8313cd9de0d1a70"
-    },
-    {
       "$type": "select-layer-settings",
       "id": "edit"
     },
