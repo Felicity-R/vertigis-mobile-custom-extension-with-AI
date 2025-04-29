@@ -63,8 +63,9 @@ namespace App1
                 }
                 else
                 {
-                    var args = new PickFileArgs(AttachmentType.Media);
-                    photoData = await _ops.FileOperations.PickFile.ExecuteAsync(args);
+                    var ops = PickOptions.Images;
+                    var file = await FilePicker.Default.PickAsync(ops);
+                    photoData = new EnhancedFileData(file);
                 }
 
                 // Use the fields calculated here.
