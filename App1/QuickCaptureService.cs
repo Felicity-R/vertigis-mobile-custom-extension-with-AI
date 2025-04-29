@@ -1,6 +1,7 @@
 ﻿using App1;
 using Esri.ArcGISRuntime.Geometry;
 using Microsoft.Maui.Graphics.Platform;
+using System.Text.Json;
 using VertiGIS.ArcGISExtensions.Utilities;
 using VertiGIS.Mobile.Composition;
 using VertiGIS.Mobile.Composition.Messaging;
@@ -73,32 +74,40 @@ namespace App1
 
                 /*
                  *  Example of how to use OpenAIClient to query a picture. TODO: Parse response text into feature
-                 * 
-                    var photo = await TakePhotoAsync();
-                    var imageData = await GetPhotoAsBytesAsync(photo);
-                    var queries = new List<string>
+                 */
+                var queries = new List<string>
                     {
                         """
-                        What can you tell me about this tree in British Columbia? Fill out the following dictionary with answers. Respond with only JSON.  
+                        Fill out the following information about a specific tree, from the given image.
                         {
-                            Common Name:
-                            Scientific Name:
+                            CommonName:
+                            ScientificName:
                             Family:
-                            Conservation Status:
-                            Condition:
+                            ConservationStatus:
+                            Health:
                         }
+                        'Health' should be an evaluation of the health of the individual tree pictured.
+                        Respond only with JSON.
                         """,
                     };
 
-                    var response = await _openAIAssistant.QueryImageAsync(imageData, queries);
-                    var responseText = response.Content[0].Text;
-                 
-                 */
+                var response = await _openAIAssistant.QueryImageAsync(photoData.Data, queries);
+                var responseText = response.Content[0].Text;
 
-                // Use AI results to populate some feature attribute(s)
+                // Remove ```json and ``` markers
+                string json = responseText.Trim()
+                                 .Replace("```json", "", StringComparison.OrdinalIgnoreCase)
+                                 .Replace("```", "")
+                                 .Trim();
+
+                var temp = JsonSerializer.Deserialize<Dictionary<string, string>>(json)!;
+
                 var attributes = new Dictionary<string, object?>();
-                // TODO
-                attributes["Name"] = "TODO Name this tree";
+
+                foreach(var kvp in temp)
+                {
+                    attributes.Add(kvp.Key, kvp.Value);
+                }
 
                 // Create the new feature
                 var newFeature = table.CreateFeature(attributes, position);
