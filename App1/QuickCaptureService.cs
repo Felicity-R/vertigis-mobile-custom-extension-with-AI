@@ -58,10 +58,22 @@ namespace App1
                 // Use AI results to populate some feature attribute(s)
                 var attributes = new Dictionary<string, object?>();
                 // TODO
+                attributes["Name"] = "TODO Name this tree";
 
                 // Create the new feature
                 var newFeature = table.CreateFeature(attributes, position);
                 await table.AddFeatureAsync(newFeature);
+
+                if (table is Esri.ArcGISRuntime.Data.ServiceFeatureTable serviceFeatureTable)
+                {
+                    // If we're editing an online feature, apply edits and get the submitted feature
+                    var editResults = await serviceFeatureTable.ApplyEditsAsync();
+                    var qp = new Esri.ArcGISRuntime.Data.QueryParameters() { ReturnGeometry = true };
+                    qp.ObjectIds.Add(editResults.First().ObjectId);
+                    newFeature = (await table.QueryFeaturesAsync(qp)).First();
+                }
+
+                // Get the VertiGIS representation of the new feature
                 var vertiGISFeature = newFeature.ToVertiGISFeature(layerExt);
 
                 // Add the photo as an attachment on the feature
@@ -70,9 +82,6 @@ namespace App1
 
                 // Launch the feature editing form so user can tweak values if necessary
                 await _ops.EditOperations.DisplayUpdateFeature.ExecuteAsync(vertiGISFeature);
-
-                // Confirmation (can remove later)
-                await _dialog.ShowAlertAsync("Finished", "Success");
             }
             catch (Exception e)
             {
