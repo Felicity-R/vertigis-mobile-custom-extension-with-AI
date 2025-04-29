@@ -8,6 +8,7 @@ using VertiGIS.Mobile.Infrastructure.App;
 using VertiGIS.Mobile.Infrastructure.Dialog;
 using VertiGIS.Mobile.Infrastructure.Maps;
 using VertiGIS.Mobile.Infrastructure.Messaging;
+using VertiGIS.Mobile.Toolkit.File;
 using VertiGIS.Mobile.Toolkit.Utilities;
 
 [assembly: Service(typeof(QuickCaptureService))]
@@ -49,8 +50,19 @@ namespace App1
                     position = position.RemoveM() as MapPoint;
                 }
 
-                // Take a photo
-                var photoData = await _ops.PhotoOperations.TakePhoto.ExecuteAsync();
+                EnhancedFileData photoData;
+
+                // Take a photo or pick a file
+                var choice = await _dialog.ShowConfirmationDialogAsync("Take a photo, or choose an existing photo from your library", "Select", "Use camera", "Choose from library");
+                if (choice)
+                {
+                    photoData = await _ops.PhotoOperations.TakePhoto.ExecuteAsync();
+                }
+                else
+                {
+                    var args = new PickFileArgs(AttachmentType.Media);
+                    photoData = await _ops.FileOperations.PickFile.ExecuteAsync(args);
+                }
 
                 // Process photo using AI service
                 // TODO

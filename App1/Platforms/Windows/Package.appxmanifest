@@ -40,6 +40,7 @@
 	
 	<Capabilities>
 		<rescap:Capability Name="runFullTrust" />
+		<rescap:Capability Name="broadFileSystemAccess" />
 		<Capability Name="internetClient" />
 		<Capability Name="internetClientServer" />
 		<uap:Capability Name="enterpriseAuthentication" />
