@@ -99,6 +99,8 @@ namespace App1
             {
                 await _dialog.ShowAlertAsync($"{e.Message}", "Error");
                 // TODO: remove feature if a failure happens part way through, after adding it to the table
+
+                // Test
             }
         }
     }
