@@ -67,6 +67,9 @@ namespace App1
                     photoData = await _ops.FileOperations.PickFile.ExecuteAsync(args);
                 }
 
+                // Use the fields calculated here.
+                var fieldJson = FieldUtils.GetFieldsAsStringifiedJSON(table.Fields);
+
                 /*
                  *  Example of how to use OpenAIClient to query a picture. TODO: Parse response text into feature
                  * 
