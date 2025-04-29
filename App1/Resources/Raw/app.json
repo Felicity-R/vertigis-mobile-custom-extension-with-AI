@@ -126,7 +126,7 @@
     {
       "$type": "map-extension",
       "id": "map1",
-      "webMap": "c27fa8668647489482dd418b0d765aec",
+      "webMap": "d1aaab4032d446ec90247b35d2a7d721",
       "onClick": [ "tasks.identify", "highlights.pulse", "results.display" ],
       "onSecondaryClick": "map.show-context-menu",
       "contextMenu": "item://menu/context-menu"

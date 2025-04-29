@@ -35,7 +35,7 @@ namespace App1
             {
                 // Get the map (the first/only available map), and the layer we want to add to
                 var map = _mapRepo.AllMaps.EnumerateExisting().First().MapExtension;
-                var layerExt = map.LayerExtensions.FindByLayerId("Victoria_Fire_Hydrants_8780");
+                var layerExt = map.LayerExtensions.FindByLayerId("1968288a255-layer-2"); // 1968288a255-layer-2 = the trees layer
                 var table = layerExt.GetFeatureTable();
 
                 // Get current location (will place feature there)
