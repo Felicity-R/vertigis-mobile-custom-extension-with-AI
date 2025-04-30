@@ -71,6 +71,8 @@ namespace App1
                     fileData = new EnhancedFileData(photo);
                 }
 
+                await _ops.UIOperations.DisplayBusyState.ExecuteAsync();
+
                 // Use the fields calculated here.
                 var fieldJson = FieldUtils.GetFieldsAsStringifiedJSON(table.Fields);
 
@@ -100,7 +102,7 @@ namespace App1
 
                 var attributes = new Dictionary<string, object?>();
 
-                foreach(var kvp in temp)
+                foreach (var kvp in temp)
                 {
                     attributes.Add(kvp.Key, kvp.Value);
                 }
@@ -134,6 +136,10 @@ namespace App1
                 // TODO: remove feature if a failure happens part way through, after adding it to the table
 
                 // Test
+            }
+            finally
+            {
+                await _ops.UIOperations.HideBusyState.ExecuteAsync();
             }
         }
 
