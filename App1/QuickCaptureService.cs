@@ -48,7 +48,7 @@ namespace App1
                 var position = await _ops.GeolocationOperations.GetPosition.ExecuteAsync();
                 position = HandleZAndMValues(table, position);
 
-                EnhancedFileData fileData = await GetPhoto();
+                EnhancedFileData fileData = await GetPhotoFromUser();
 
                 await _ops.UIOperations.DisplayBusyState.ExecuteAsync();
 
@@ -124,7 +124,7 @@ namespace App1
             return attributes;
         }
 
-        private async Task<EnhancedFileData> GetPhoto()
+        private async Task<EnhancedFileData> GetPhotoFromUser()
         {
             EnhancedFileData fileData;
             // Take a photo or pick a file
