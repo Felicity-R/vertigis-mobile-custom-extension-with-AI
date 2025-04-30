@@ -54,19 +54,21 @@ namespace App1
                     position = position.RemoveM() as MapPoint;
                 }
 
-                EnhancedFileData photoData;
+                EnhancedFileData fileData;
+                FileResult? photo;
 
                 // Take a photo or pick a file
                 var choice = await _dialog.ShowConfirmationDialogAsync("Take a photo, or choose an existing photo from your library", "Select", "Use camera", "Choose from library");
                 if (choice)
                 {
-                    photoData = await _ops.PhotoOperations.TakePhoto.ExecuteAsync();
+                    photo = await TakePhotoAsync();
+                    fileData = new EnhancedFileData(photo);
                 }
                 else
                 {
                     var ops = PickOptions.Images;
-                    var file = await FilePicker.Default.PickAsync(ops);
-                    photoData = new EnhancedFileData(file);
+                    photo = await FilePicker.Default.PickAsync(ops);
+                    fileData = new EnhancedFileData(photo);
                 }
 
                 // Use the fields calculated here.
@@ -126,7 +128,7 @@ namespace App1
                 var vertiGISFeature = newFeature.ToVertiGISFeature(layerExt);
 
                 // Add the photo as an attachment on the feature
-                var attachmentArgs = new AddAttachmentArgs(photoData, [vertiGISFeature], map);
+                var attachmentArgs = new AddAttachmentArgs(fileData, [vertiGISFeature], map);
                 await _ops.EditOperations.AddAttachment.ExecuteAsync(attachmentArgs);
 
                 // Launch the feature editing form so user can tweak values if necessary
@@ -159,15 +161,20 @@ namespace App1
         {
             if (photo == null)
             {
-                return new byte[0];
+                return Array.Empty<byte>();
             }
 
             using var stream = await photo.OpenReadAsync();
             var image = PlatformImage.FromStream(stream);
 
             // Default photos are around 4 MB, downsize by 1/4 on Android.
-            var newImage = image.Downsize(1008f, false);
-            return newImage.AsBytes(ImageFormat.Png, 1f);
+            if (image.Height > 1008 || image.Width > 1008)
+            {
+                var newImage = image.Downsize(1008f, false);
+                return newImage.AsBytes();
+            }
+
+            return image.AsBytes();
         }
     }
 }
