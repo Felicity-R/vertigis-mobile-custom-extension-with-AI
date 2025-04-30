@@ -93,16 +93,10 @@ namespace App1
                         """,
                     };
 
-                var response = await _openAIAssistant.QueryImageAsync(photoData.Data, queries);
+                var response = await _openAIAssistant.QueryImageAsync(fileData.Data, queries);
                 var responseText = response.Content[0].Text;
 
-                // Remove ```json and ``` markers
-                string json = responseText.Trim()
-                                 .Replace("```json", "", StringComparison.OrdinalIgnoreCase)
-                                 .Replace("```", "")
-                                 .Trim();
-
-                var temp = JsonSerializer.Deserialize<Dictionary<string, string>>(json)!;
+                var temp = JsonSerializer.Deserialize<Dictionary<string, string>>(responseText)!;
 
                 var attributes = new Dictionary<string, object?>();
 
