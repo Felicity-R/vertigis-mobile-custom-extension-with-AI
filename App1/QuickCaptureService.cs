@@ -1,4 +1,5 @@
 ﻿using App1;
+using Esri.ArcGISRuntime.Data;
 using Esri.ArcGISRuntime.Geometry;
 using Microsoft.Maui.Graphics.Platform;
 using System.Text.Json;
@@ -45,40 +46,12 @@ namespace App1
 
                 // Get current location (will place feature there)
                 var position = await _ops.GeolocationOperations.GetPosition.ExecuteAsync();
-                if (!table.HasZ)
-                {
-                    position = position.RemoveZ() as MapPoint;
-                }
-                if (!table.HasM)
-                {
-                    position = position.RemoveM() as MapPoint;
-                }
+                position = HandleZAndMValues(table, position);
 
-                EnhancedFileData fileData;
-                FileResult? photo;
-
-                // Take a photo or pick a file
-                var choice = await _dialog.ShowConfirmationDialogAsync("Take a photo, or choose an existing photo from your library", "Select", "Use camera", "Choose from library");
-                if (choice)
-                {
-                    photo = await TakePhotoAsync();
-                    fileData = new EnhancedFileData(photo);
-                }
-                else
-                {
-                    var ops = PickOptions.Images;
-                    photo = await FilePicker.Default.PickAsync(ops);
-                    fileData = new EnhancedFileData(photo);
-                }
+                EnhancedFileData fileData = await GetPhoto();
 
                 await _ops.UIOperations.DisplayBusyState.ExecuteAsync();
 
-                // Use the fields calculated here.
-                var fieldJson = FieldUtils.GetFieldsAsStringifiedJSON(table.Fields);
-
-                /*
-                 *  Example of how to use OpenAIClient to query a picture. TODO: Parse response text into feature
-                 */
                 var queries = new List<string>
                     {
                         """
@@ -96,32 +69,10 @@ namespace App1
                     };
 
                 var response = await _openAIAssistant.QueryImageAsync(fileData.Data, queries);
-                var responseText = response.Content[0].Text;
-
-                var temp = JsonSerializer.Deserialize<Dictionary<string, string>>(responseText)!;
-
-                var attributes = new Dictionary<string, object?>();
-
-                foreach (var kvp in temp)
-                {
-                    attributes.Add(kvp.Key, kvp.Value);
-                }
+                Dictionary<string, object?> attributes = GetAttributesFromResponse(response.Content[0].Text);
 
                 // Create the new feature
-                var newFeature = table.CreateFeature(attributes, position);
-                await table.AddFeatureAsync(newFeature);
-
-                if (table is Esri.ArcGISRuntime.Data.ServiceFeatureTable serviceFeatureTable)
-                {
-                    // If we're editing an online feature, apply edits and get the submitted feature
-                    var editResults = await serviceFeatureTable.ApplyEditsAsync();
-                    var qp = new Esri.ArcGISRuntime.Data.QueryParameters() { ReturnGeometry = true };
-                    qp.ObjectIds.Add(editResults.First().ObjectId);
-                    newFeature = (await table.QueryFeaturesAsync(qp)).First();
-                }
-
-                // Get the VertiGIS representation of the new feature
-                var vertiGISFeature = newFeature.ToVertiGISFeature(layerExt);
+                var vertiGISFeature = await GetNewFeature(layerExt, table, position, attributes);
 
                 // Add the photo as an attachment on the feature
                 var attachmentArgs = new AddAttachmentArgs(fileData, [vertiGISFeature], map);
@@ -133,9 +84,6 @@ namespace App1
             catch (Exception e)
             {
                 await _dialog.ShowAlertAsync($"{e.Message}", "Error");
-                // TODO: remove feature if a failure happens part way through, after adding it to the table
-
-                // Test
             }
             finally
             {
@@ -143,38 +91,70 @@ namespace App1
             }
         }
 
-        private static async Task<FileResult?> TakePhotoAsync()
+        private static async Task<VertiGIS.ArcGISExtensions.Data.Feature> GetNewFeature(VertiGIS.ArcGISExtensions.Mapping.LayerExtension layerExt, FeatureTable table, MapPoint position, Dictionary<string, object?> attributes)
         {
-            if (MediaPicker.Default.IsCaptureSupported)
+            var newFeature = table.CreateFeature(attributes, position);
+            await table.AddFeatureAsync(newFeature);
+
+            if (table is ServiceFeatureTable serviceFeatureTable)
             {
-                var photo = await MediaPicker.Default.CapturePhotoAsync();
-                if (photo != null)
-                {
-                    return photo;
-                }
+                // If we're editing an online feature, apply edits and get the submitted feature
+                var editResults = await serviceFeatureTable.ApplyEditsAsync();
+                var qp = new QueryParameters() { ReturnGeometry = true };
+                qp.ObjectIds.Add(editResults.First().ObjectId);
+                newFeature = (await table.QueryFeaturesAsync(qp)).First();
             }
 
-            return null;
+            // Get the VertiGIS representation of the new feature
+            var vertiGISFeature = newFeature.ToVertiGISFeature(layerExt);
+            return vertiGISFeature;
         }
 
-        private static async Task<byte[]> GetPhotoAsBytesAsync(FileResult photo)
+        private static Dictionary<string, object?> GetAttributesFromResponse(string responseText)
         {
-            if (photo == null)
+            var temp = JsonSerializer.Deserialize<Dictionary<string, string>>(responseText)!;
+
+            var attributes = new Dictionary<string, object?>();
+
+            foreach (var kvp in temp)
             {
-                return Array.Empty<byte>();
+                attributes.Add(kvp.Key, kvp.Value);
             }
 
-            using var stream = await photo.OpenReadAsync();
-            var image = PlatformImage.FromStream(stream);
+            return attributes;
+        }
 
-            // Default photos are around 4 MB, downsize by 1/4 on Android.
-            if (image.Height > 1008 || image.Width > 1008)
+        private async Task<EnhancedFileData> GetPhoto()
+        {
+            EnhancedFileData fileData;
+            // Take a photo or pick a file
+            var choice = await _dialog.ShowConfirmationDialogAsync("Take a photo, or choose an existing photo from your library", "Select", "Use camera", "Choose from library");
+            if (choice)
             {
-                var newImage = image.Downsize(1008f, false);
-                return newImage.AsBytes();
+                fileData = await _ops.PhotoOperations.TakePhoto.ExecuteAsync();
+            }
+            else
+            {
+                var ops = PickOptions.Images;
+                var picked = await FilePicker.Default.PickAsync(ops);
+                fileData = new EnhancedFileData(picked);
             }
 
-            return image.AsBytes();
+            return fileData;
+        }
+
+        private static MapPoint HandleZAndMValues(FeatureTable table, MapPoint? position)
+        {
+            if (!table.HasZ)
+            {
+                position = position.RemoveZ() as MapPoint;
+            }
+            if (!table.HasM)
+            {
+                position = position.RemoveM() as MapPoint;
+            }
+
+            return position;
         }
     }
 }
