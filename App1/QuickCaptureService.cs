@@ -78,6 +78,8 @@ namespace App1
                 var attachmentArgs = new AddAttachmentArgs(fileData, [vertiGISFeature], map);
                 await _ops.EditOperations.AddAttachment.ExecuteAsync(attachmentArgs);
 
+                await _ops.ResultsOperations.DisplayDetails.ExecuteAsync(vertiGISFeature);
+
                 // Launch the feature editing form so user can tweak values if necessary
                 await _ops.EditOperations.DisplayUpdateFeature.ExecuteAsync(vertiGISFeature);
             }
@@ -143,15 +145,15 @@ namespace App1
             return fileData;
         }
 
-        private static MapPoint HandleZAndMValues(FeatureTable table, MapPoint? position)
+        private static MapPoint? HandleZAndMValues(FeatureTable table, MapPoint? position)
         {
             if (!table.HasZ)
             {
-                position = position.RemoveZ() as MapPoint;
+                position = position?.RemoveZ() as MapPoint;
             }
             if (!table.HasM)
             {
-                position = position.RemoveM() as MapPoint;
+                position = position?.RemoveM() as MapPoint;
             }
 
             return position;
