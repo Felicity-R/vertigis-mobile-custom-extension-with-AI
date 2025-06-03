@@ -119,7 +119,7 @@
     {
       "$type": "map-extension",
       "id": "map1",
-      "webMap": "d1aaab4032d446ec90247b35d2a7d721",
+      "webMap": "0411e73911ab42c88e666f4b5740fe69",
       "onClick": [ "tasks.identify", "highlights.pulse", "results.display" ],
       "onSecondaryClick": "map.show-context-menu",
       "contextMenu": "item://menu/context-menu"
