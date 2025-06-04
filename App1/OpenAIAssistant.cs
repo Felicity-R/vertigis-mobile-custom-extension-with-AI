@@ -6,9 +6,9 @@ namespace App1
 {
     internal class OpenAIAssistant
     {
-        private const string deploymentName = "2025-hackathon-ai-gpt-4o-mini";
-        private const string endpoint = "https://2025-hackathon-ai.openai.azure.com";
-        // INSERT YOUR OWN CONNECTION KEY HERE
+        /** INSERT YOUR OWN NAME / ENDPOINT / KEY HERE **/
+        private const string deploymentName = "";
+        private const string endpoint = "";
         private const string key = "";
 
         private AzureOpenAIClient _openAIClient;
