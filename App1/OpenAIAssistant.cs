@@ -23,7 +23,7 @@ namespace App1
             _openAIClient = new AzureOpenAIClient(new Uri(endpoint), new AzureKeyCredential(key));
         }
 
-        public async Task<ChatCompletion> QueryImageAsync(byte[] imageData, List<string> queries)
+        public async Task<ChatCompletion> QueryImageAsync(byte[] imageData, List<string> queries, string systemPrompt)
         {
             // Limit image to 2MB for quick response and less tokens used
             if (imageData.Length > 2097152)
@@ -38,7 +38,7 @@ namespace App1
 
             var chatClient = _openAIClient.GetChatClient(deploymentName);
             var chatContent = ChatMessageContentPart.CreateImagePart(imageBytes: BinaryData.FromBytes(imageData), "image/png");
-            var systemPrompt = new SystemChatMessage("You are a helpful assistant knowledgeable about trees");
+            var systemPrompt = new SystemChatMessage(systemPrompt);
             var imagePrompt = new UserChatMessage(chatContent);
 
             var chatMessages = new List<ChatMessage>

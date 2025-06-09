@@ -60,6 +60,8 @@ namespace App1
 
                 await _ops.UIOperations.DisplayBusyState.ExecuteAsync();
 
+                var systemPrompt = "You are a helpful assistant knowledgeable about trees";
+
                 var queries = new List<string>
                     {
                         """
@@ -76,7 +78,7 @@ namespace App1
                         """,
                     };
 
-                var response = await _openAIAssistant.QueryImageAsync(fileData.Data, queries);
+                var response = await _openAIAssistant.QueryImageAsync(fileData.Data, queries, systemPrompt);
                 Dictionary<string, object?> attributes = GetAttributesFromResponse(response.Content[0].Text);
 
                 // Create the new feature
