@@ -1,7 +1,6 @@
 ﻿using App1;
 using Esri.ArcGISRuntime.Data;
 using Esri.ArcGISRuntime.Geometry;
-using Microsoft.Maui.Graphics.Platform;
 using System.Text.Json;
 using VertiGIS.ArcGISExtensions.Utilities;
 using VertiGIS.Mobile.Composition;
@@ -29,7 +28,16 @@ namespace App1
             _ops = deps.Operations;
             _dialog = deps.DialogController;
             _mapRepo = deps.MapRepo;
-            _openAIAssistant = new OpenAIAssistant();
+
+            try
+            {
+                _openAIAssistant = new OpenAIAssistant();
+            }
+            catch (InvalidOperationException ex)
+            {
+                _dialog.ShowAlertAsync(ex).NoWait();
+                return;
+            }
 
             // Register our custom command. This is called by name later from the "I Want To..." menu.
             deps.OperationRegistry.VoidOperation("custom.quick-capture").RegisterExecute(DoQuickCaptureAsync, this);

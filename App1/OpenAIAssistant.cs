@@ -15,6 +15,11 @@ namespace App1
 
         public OpenAIAssistant()
         {
+            if (string.IsNullOrWhiteSpace(key) || string.IsNullOrWhiteSpace(endpoint))
+            {
+                throw new InvalidOperationException("You must provide an endpoint and a key in order to initialize the AI client.");
+            }
+
             _openAIClient = new AzureOpenAIClient(new Uri(endpoint), new AzureKeyCredential(key));
         }
 
@@ -48,7 +53,7 @@ namespace App1
                 chatMessages.Add(userChatMessage);
             }
 
-            var chatCompletionOptions = new ChatCompletionOptions() { ResponseFormat = ChatResponseFormat.CreateJsonObjectFormat()};
+            var chatCompletionOptions = new ChatCompletionOptions() { ResponseFormat = ChatResponseFormat.CreateJsonObjectFormat() };
             ChatCompletion chatCompletion = await chatClient.CompleteChatAsync(chatMessages, chatCompletionOptions);
             return chatCompletion;
         }
