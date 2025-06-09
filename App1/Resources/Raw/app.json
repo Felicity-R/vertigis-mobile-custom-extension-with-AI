@@ -57,13 +57,6 @@
       "url": "https://geocode.arcgis.com/arcgis/rest/services/World/GeocodeServer"
     },
     {
-      "$type": "workflow",
-      "id": "workflow",
-      "title": "Hydrant Inspection",
-      "target": "#taskbar",
-      "portalItem": "1dfbdba7cd9b4453a8313cd9de0d1a70"
-    },
-    {
       "$type": "select-layer-settings",
       "id": "edit"
     },
@@ -126,7 +119,7 @@
     {
       "$type": "map-extension",
       "id": "map1",
-      "webMap": "c27fa8668647489482dd418b0d765aec",
+      "webMap": "0411e73911ab42c88e666f4b5740fe69",
       "onClick": [ "tasks.identify", "highlights.pulse", "results.display" ],
       "onSecondaryClick": "map.show-context-menu",
       "contextMenu": "item://menu/context-menu"
@@ -154,6 +147,12 @@
             },
             "map.zoom-to-initial-viewpoint"
           ]
+        },
+        {
+          "title": "Add a plant feature",
+          "isEnabled": true,
+          "iconId": "feature-add-tree",
+          "action": "custom.quick-capture"
         }
       ]
     },
