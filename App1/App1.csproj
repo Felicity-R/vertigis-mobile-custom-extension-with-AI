@@ -22,7 +22,7 @@
 		<ApplicationDisplayVersion>1.0</ApplicationDisplayVersion>
 		<ApplicationVersion>1</ApplicationVersion>
 
-		<SupportedOSPlatformVersion Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'ios'">11.0</SupportedOSPlatformVersion>
+		<SupportedOSPlatformVersion Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'ios'">16.0</SupportedOSPlatformVersion>
 		<SupportedOSPlatformVersion Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'android'">30.0</SupportedOSPlatformVersion>
 		<SupportedOSPlatformVersion Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'windows'">10.0.19041.0</SupportedOSPlatformVersion>
 		<TargetPlatformMinVersion Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'windows'">10.0.19041.0</TargetPlatformMinVersion>
@@ -70,7 +70,6 @@
 	</ItemGroup>
 		
 	<ItemGroup>
-		<PackageReference Include="Jint" Version="4.1.0" />
 		<PackageReference Include="Microsoft.Maui.Controls" Version="$(MauiVersion)" />
 		<PackageReference Include="Microsoft.Maui.Controls.Compatibility" Version="$(MauiVersion)" />
 		<PackageReference Include="Microsoft.Extensions.Logging.Debug" Version="8.0.1" />
@@ -79,7 +78,7 @@
 	<ItemGroup>
 		<PackageReference Include="Esri.ArcGISRuntime" Version="200.5.0" />
 		<PackageReference Include="Esri.ArcGISRuntime.Maui" Version="200.5.0" />
-		<PackageReference Include="VertiGIS.Mobile" Version="5.36.0-PullRequest27611.56" /> 
+		<PackageReference Include="VertiGIS.Mobile" Version="5.36.0.191" /> 
 		<PackageReference Include="Azure.AI.OpenAI" Version="2.1.0" />
 		<PackageReference Include="Azure.Core" Version="1.45.0" />
 		<PackageReference Include="Azure.Identity" Version="1.13.2" />
