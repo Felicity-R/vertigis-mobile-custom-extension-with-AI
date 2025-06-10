@@ -38,13 +38,13 @@ namespace App1
 
             var chatClient = _openAIClient.GetChatClient(deploymentName);
             var chatContent = ChatMessageContentPart.CreateImagePart(imageBytes: BinaryData.FromBytes(imageData), "image/png");
-            var systemPrompt = new SystemChatMessage(systemPrompt);
-            var imagePrompt = new UserChatMessage(chatContent);
+            var systemChatMessage = new SystemChatMessage(systemPrompt);
+            var imageChatMessage = new UserChatMessage(chatContent);
 
             var chatMessages = new List<ChatMessage>
             {
-                systemPrompt,
-                imagePrompt,
+                systemChatMessage,
+                imageChatMessage,
             };
 
             foreach (var query in queries)
