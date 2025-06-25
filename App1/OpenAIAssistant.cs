@@ -26,10 +26,10 @@ namespace App1
         public async Task<ChatCompletion> QueryImageAsync(byte[] imageData, List<string> queries, string systemPrompt)
         {
             // Limit image to 2MB for quick response and less tokens used
-            if (imageData.Length > 2097152)
-            {
-                throw new ArgumentException("Image exceeded 2MB, try downsizing the image");
-            }
+            //if (imageData.Length > 6097152)
+            //{
+            //    throw new ArgumentException("Image exceeded 6MB, try downsizing the image");
+            //}
 
             if (imageData.Length == 0)
             {
