@@ -149,7 +149,7 @@
           ]
         },
         {
-          "title": "Add a plant feature",
+          "title": "Add a tree feature",
           "isEnabled": true,
           "iconId": "feature-add-tree",
           "action": "custom.quick-capture"
